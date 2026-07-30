@@ -1,0 +1,30 @@
+# kseal CI — test, build, and publish Python package to Forgejo PyPI
+when:
+  - event: push
+    branch: main
+  - event: manual
+  - event: tag
+
+steps:
+  - name: test
+    image: git.local.tdusnewbie.com/tdusnewbie/plugin-test-python:v0.0.1
+    pull: true
+    settings:
+      test_path: tests/
+      coverage: true
+      coverage_threshold: 80
+
+  - name: build-publish
+    image: ghcr.io/astral-sh/uv:latest
+    when:
+      - event: tag
+      - event: manual
+    environment:
+      UV_PUBLISH_URL: https://git.local.tdusnewbie.com/api/packages/tdusnewbie/pypi
+      UV_PUBLISH_USERNAME:
+        from_secret: forgejo_username
+      UV_PUBLISH_PASSWORD:
+        from_secret: forgejo_token
+    commands:
+      - uv build
+      - uv publish
