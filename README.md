@@ -113,7 +113,6 @@ Because the plugin is housed in a subdirectory of this repository (`kseal.nvim/`
 ```lua
 {
     "tdusnewbie/kseal",
-    url = "ssh://git@git.local.tdusnewbie.com:2222/tdusnewbie/kseal.git",
     config = function(plugin)
         -- 1. Add the subdirectory to Neovim's runtimepath
         vim.opt.rtp:append(plugin.dir .. "/kseal.nvim")
