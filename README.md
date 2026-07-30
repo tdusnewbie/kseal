@@ -16,13 +16,17 @@
 
 ## Installation
 
-You can install `kseal` globally using `uv`:
+You can install `kseal` globally using `uv`. Since it is published to a custom Forgejo package registry, use the `--index-url` flag:
 
 ```bash
-# Install locally from source
-uv tool install .
+# Install from the Forgejo PyPI registry
+uv tool install --index-url https://git.local.tdusnewbie.com/api/packages/tdusnewbie/pypi/simple/ kseal
+```
 
-# Or install from a git repository
+*(Note: If your registry is strictly private, you may need to pass credentials in the URL: `https://<user>:<token>@git.local...`)*
+
+Alternatively, you can always install it directly from the Git repository:
+```bash
 uv tool install git+ssh://git@git.local.tdusnewbie.com:2222/tdusnewbie/kseal.git
 ```
 
