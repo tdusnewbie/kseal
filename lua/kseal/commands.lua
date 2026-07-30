@@ -169,7 +169,7 @@ function M.edit(filepath, opts)
     f:write([[#!/bin/sh
 SERVER="$1"
 FILE="$2"
-nvim --server "$SERVER" --remote-expr "luaeval('require(\"kseal.commands\")._on_remote_edit(\"'\"$FILE\"'\")')"
+nvim --server "$SERVER" --remote-expr "luaeval('require(\"kseal.commands\")._on_remote_edit(\"$FILE\")')"
 while [ ! -f "$FILE.kseal_done" ]; do sleep 0.5; done
 rm -f "$FILE.kseal_done"
 ]])
