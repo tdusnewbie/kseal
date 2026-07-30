@@ -15,7 +15,7 @@ steps:
       coverage_threshold: 80
 
   - name: build-publish
-    image: ghcr.io/astral-sh/uv:latest
+    image: python:3.12-alpine
     when:
       - event: tag
       - event: manual
@@ -26,5 +26,6 @@ steps:
       UV_PUBLISH_PASSWORD:
         from_secret: forgejo_token
     commands:
+      - pip install uv
       - uv build
       - uv publish
