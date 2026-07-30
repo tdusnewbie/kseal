@@ -108,13 +108,23 @@ Available on all commands:
 
 This repository also includes a native Neovim plugin `kseal.nvim` that allows you to seamlessly read and write SealedSecret files directly inside Neovim buffers.
 
-To use it, add the `kseal.nvim` directory to your Neovim plugin manager (e.g. using `lazy.nvim` or `packer`), then require and set it up:
+Because the plugin is housed in a subdirectory of this repository (`kseal.nvim/`), here is how you install it using **lazy.nvim**:
 
 ```lua
-require("kseal").setup({
-    -- Optional: point to your locally fetched private key for offline decryption
-    private_key_path = vim.fn.expand("~/.kseal/private-key.yaml") 
-})
+{
+    "tdusnewbie/kseal",
+    url = "ssh://git@git.local.tdusnewbie.com:2222/tdusnewbie/kseal.git",
+    config = function(plugin)
+        -- 1. Add the subdirectory to Neovim's runtimepath
+        vim.opt.rtp:append(plugin.dir .. "/kseal.nvim")
+        
+        -- 2. Setup the plugin
+        require("kseal").setup({
+            -- Optional: point to your locally fetched private key for offline decryption
+            -- private_key_path = vim.fn.expand("~/.kseal/private-key.yaml") 
+        })
+    end
+}
 ```
 
 When you open a file with `kind: SealedSecret` in Neovim, it will instantly render as decrypted plaintext. When you `:w`, it will smartly re-encrypt your changes back to disk!
