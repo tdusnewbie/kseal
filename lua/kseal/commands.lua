@@ -117,15 +117,32 @@ function M.view(filepath, opts)
   float_terminal(cmd, "🔒 kseal view — q to close")
 end
 
+--- Callback invoked by the editor wrapper script when `--remote-expr` is fired.
+--- Opens the temporary file and attaches a BufDelete hook that touches the `.done` file.
+--- @param filepath string
+function M._on_remote_edit(filepath)
+  vim.cmd("edit " .. vim.fn.fnameescape(filepath))
+  local buf = vim.fn.bufnr(filepath)
+  vim.api.nvim_create_autocmd("BufDelete", {
+    buffer = buf,
+    once = true,
+    callback = function()
+      os.execute("touch " .. vim.fn.shellescape(filepath .. ".kseal_done"))
+    end
+  })
+  vim.notify(
+    "[kseal] Secret opened for editing.\n  :w  — save changes\n  :bd — close buffer and re-seal",
+    vim.log.levels.INFO
+  )
+  return 1 -- satisfy remote-expr
+end
+
 --- Edit a SealedSecret by opening its plaintext in *this* nvim instance.
 ---
---- Uses `nvim --server <socket> --remote-wait` as EDITOR so the temp file
---- created by `kseal edit` lands in the current nvim session as a normal
---- buffer. Workflow:
----   1. `:w`  — save edits to the temp file
----   2. `:bd` — close the buffer → triggers kseal to re-seal
----
---- Falls back to a terminal split if nvim is not running as a server.
+--- Uses a dynamically generated wrapper script as EDITOR because Neovim does
+--- not natively support `--remote-wait` yet. The wrapper uses `--remote-expr`
+--- to tell this Neovim instance to open the file and set up a BufDelete hook,
+--- and then it blocks until the `.done` file is touched.
 --- @param filepath string|nil
 --- @param opts     table|nil
 function M.edit(filepath, opts)
@@ -145,18 +162,27 @@ function M.edit(filepath, opts)
     return
   end
 
-  -- Point EDITOR at this nvim instance; --remote-wait blocks until the buffer is closed
-  local editor = string.format("nvim --server %s --remote-wait", vim.fn.shellescape(server))
+  -- Create a wrapper shell script that blocks since nvim lacks --remote-wait
+  local wrapper_path = vim.fn.stdpath("state") .. "/kseal_editor_wrapper.sh"
+  local f = io.open(wrapper_path, "w")
+  if f then
+    f:write([[#!/bin/sh
+SERVER="$1"
+FILE="$2"
+nvim --server "$SERVER" --remote-expr "luaeval('require(\"kseal.commands\")._on_remote_edit(\"'\"$FILE\"'\")')"
+while [ ! -f "$FILE.kseal_done" ]; do sleep 0.5; done
+rm -f "$FILE.kseal_done"
+]])
+    f:close()
+    os.execute("chmod +x " .. vim.fn.shellescape(wrapper_path))
+  end
+
+  local editor = string.format("%s %s", vim.fn.shellescape(wrapper_path), vim.fn.shellescape(server))
   local cmd = string.format(
     "env EDITOR=%s kseal edit %s %s",
     vim.fn.shellescape(editor),
     vim.fn.shellescape(filepath),
     build_flags(opts)
-  )
-
-  vim.notify(
-    "[kseal] Secret opened for editing.\n  :w  — save changes\n  :bd — close buffer and re-seal",
-    vim.log.levels.INFO
   )
 
   vim.fn.jobstart({ "sh", "-c", cmd }, {
