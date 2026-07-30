@@ -11,4 +11,5 @@ def open_editor(filepath: str):
                 break
     if not editor:
         raise RuntimeError("No editor found in $EDITOR or fallbacks (vi, nano, vim)")
-    subprocess.call([editor, filepath])
+    import shlex
+    subprocess.call(shlex.split(editor) + [filepath])
