@@ -70,14 +70,16 @@ def test_create_cmd(mock_ensure, mock_save, mock_seal, mock_extract, mock_load):
 
 @patch("kseal.cli._load_sealed_secret")
 @patch("kseal.cli._extract_name_ns")
+@patch("kseal.cli.secret_exists")
 @patch("kseal.cli._require_secret_exists")
 @patch("kseal.cli.get_secret")
 @patch("kseal.cli._smart_seal")
 @patch("kseal.cli.save_yaml")
 @patch("kseal.cli.ensure_kubeseal")
-def test_set_cmd(mock_ensure, mock_save, mock_smart, mock_get, mock_req, mock_ext, mock_load):
+def test_set_cmd(mock_ensure, mock_save, mock_smart, mock_get, mock_req, mock_exists, mock_ext, mock_load):
     mock_load.return_value = {"metadata": {"name": "test"}}
     mock_ext.return_value = ("test", "default")
+    mock_exists.return_value = True
     mock_get.return_value = {"data": {"old": "dmFs"}}
     mock_smart.return_value = {"kind": "SealedSecret"}
     
