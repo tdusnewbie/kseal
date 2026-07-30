@@ -106,7 +106,9 @@ Available on all commands:
 
 ## Neovim Integration (`kseal.nvim`)
 
-This repository also includes a native Neovim plugin `kseal.nvim` that allows you to seamlessly read and write SealedSecret files directly inside Neovim buffers.
+This repository also includes a native Neovim plugin `kseal.nvim` that allows you to seamlessly read and write SealedSecret files directly inside Neovim buffers. 
+
+It completely bypasses Neovim's missing `--remote-wait` feature by using a smart, dynamically-generated wrapper script that halts the background Python process natively until you close the buffer!
 
 To install it using **lazy.nvim**, just add this to your plugins:
 
@@ -120,4 +122,13 @@ To install it using **lazy.nvim**, just add this to your plugins:
 }
 ```
 
-When you open a file with `kind: SealedSecret` in Neovim, it will instantly render as decrypted plaintext. When you `:w`, it will smartly re-encrypt your changes back to disk!
+### How it works
+When you open a file with `kind: SealedSecret`, `kseal.nvim` automatically detects it and registers local keymaps. 
+
+Default Keybindings (with `<leader>k` prefix):
+- `<leader>kv` - View decrypted secret in a floating terminal (`:KsealView`)
+- `<leader>ke` - Decrypt and open the secret in a new buffer for editing (`:KsealEdit`). 
+  - *Workflow:* Use `:w` to save changes, and `:bd` to close the buffer and trigger the smart re-seal!
+- `<leader>ks` - Prompt to set a KEY=value pair without opening the editor (`:KsealSet`)
+- `<leader>kd` - Prompt to delete a key (`:KsealDelete`)
+- `<leader>kc` - Guide you through creating a new SealedSecret (`:KsealCreate`)
