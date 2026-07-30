@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "kseal"
+version = "0.1.0"
+description = "A SOPS-inspired CLI tool for managing SealedSecrets in a k3s cluster."
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "PyYAML>=6.0.1",
+    "rich>=13.0.0",
+    "typer[all]>=0.12.0",
+    "requests>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+]
+
+[project.scripts]
+kseal = "kseal.cli:main"
+
+[tool.pytest.ini_options]
+addopts = "--cov=kseal --cov-report=term-missing --cov-fail-under=80"
+testpaths = ["tests"]
